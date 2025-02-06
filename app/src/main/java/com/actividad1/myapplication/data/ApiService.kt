@@ -1,9 +1,9 @@
-package com.actividad1.myapplication.api
+package com.actividad1.myapplication.data
 
-import com.actividad1.myapplication.api.models.Car
-import com.actividad1.myapplication.api.models.CarWithImage
-import com.actividad1.myapplication.api.models.LoginRequest
-import com.actividad1.myapplication.api.models.LoginResponse
+import com.actividad1.myapplication.data.models.Car
+import com.actividad1.myapplication.data.models.CarWithImage
+import com.actividad1.myapplication.data.models.LoginRequest
+import com.actividad1.myapplication.data.models.LoginResponse
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.DELETE

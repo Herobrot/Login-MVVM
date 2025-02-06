@@ -1,4 +1,4 @@
-package com.actividad1.myapplication.api
+package com.actividad1.myapplication.data
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

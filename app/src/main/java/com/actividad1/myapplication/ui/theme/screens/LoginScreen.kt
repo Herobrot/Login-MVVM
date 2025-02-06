@@ -17,8 +17,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.actividad1.myapplication.R
-import com.actividad1.myapplication.api.ApiClient
-import com.actividad1.myapplication.api.models.LoginRequest
+import com.actividad1.myapplication.data.ApiClient
+import com.actividad1.myapplication.data.models.LoginRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -42,7 +42,7 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
-            painter = painterResource(id = R.drawable.img),
+            painter = painterResource(id = R.drawable.espaydehernan),
             contentDescription = null,
             modifier = Modifier.fillMaxWidth()
         )

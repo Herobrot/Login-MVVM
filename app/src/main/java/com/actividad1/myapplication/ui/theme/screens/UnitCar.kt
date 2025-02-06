@@ -11,9 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.actividad1.myapplication.api.models.Car
-import com.actividad1.myapplication.api.ApiClient
-import com.actividad1.myapplication.api.models.CarWithImage
+import com.actividad1.myapplication.data.models.Car
+import com.actividad1.myapplication.data.ApiClient
+import com.actividad1.myapplication.data.models.CarWithImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

@@ -1,4 +1,4 @@
-package com.actividad1.myapplication.api.models
+package com.actividad1.myapplication.data.models
 
 
 data class LoginRequest(val correo: String, val password: String)
