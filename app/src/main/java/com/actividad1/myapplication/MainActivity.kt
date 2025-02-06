@@ -8,8 +8,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.actividad1.myapplication.ui.theme.MyApplicationTheme
-import com.actividad1.myapplication.ui.theme.screens.LoginScreen
-import com.actividad1.myapplication.ui.theme.screens.CarStockScreen
+import com.actividad1.myapplication.ui.theme.views.LoginScreen
+import com.actividad1.myapplication.ui.theme.views.CarStockScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -1,4 +1,4 @@
-package com.actividad1.myapplication.ui.theme.screens
+package com.actividad1.myapplication.ui.theme.views
 
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -10,27 +10,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.actividad1.myapplication.data.models.Car
-import com.actividad1.myapplication.data.ApiClient
-import com.actividad1.myapplication.data.models.CarWithImage
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import retrofit2.awaitResponse
+import com.actividad1.myapplication.ui.theme.viewmodel.CarStockViewModel
 
 @Composable
-fun CarStockScreen(navController: NavController) {
-    var cars by remember { mutableStateOf<List<Car>>(emptyList()) }
-    var showAddEditModal by remember { mutableStateOf(false) }
-    var selectedCar by remember { mutableStateOf<Car?>(null) }
-
-    LaunchedEffect(Unit) {
-        loadCars { fetchedCars ->
-            cars = fetchedCars
-        }
-    }
+fun CarStockScreen(navController: NavController, viewModel: CarStockViewModel = viewModel()) {
 
     Column(modifier = Modifier.padding(16.dp).fillMaxSize()) {
         Text(
@@ -40,7 +26,7 @@ fun CarStockScreen(navController: NavController) {
         )
 
         Button(
-            onClick = { showAddEditModal = true },
+            onClick = { viewModel.openModal() },
             modifier = Modifier.align(Alignment.End)
         ) {
             Text("Agregar Carro")
@@ -49,27 +35,20 @@ fun CarStockScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         LazyColumn {
-            items(cars.size) { index ->
-                val car = cars[index]
+            items(viewModel.getCars().size) { index ->
+                val car = viewModel.getCars()[index]
                 CarItem(
                     car = car,
-                    onEdit = { selectedCar = car; showAddEditModal = true },
-                    onDelete = {
-                        deleteCar(car) { loadCars { cars = it } }
-                    }
+                    onEdit = { viewModel.openModal(car) },
+                    onDelete = { viewModel.deleteCar(car) }
                 )
             }
         }
 
-        if (showAddEditModal) {
+        if (viewModel.getModalStatus()) {
             AddEditCarModal(
-                car = selectedCar,
-                onDismiss = { showAddEditModal = false; selectedCar = null },
-                onSave = {
-                    loadCars { cars = it }
-                    showAddEditModal = false
-                },
-                onOpenCamera = { navController.navigate("camera") }
+                car = viewModel.getCar(),
+                onDismiss = { viewModel.closeModal() }
             )
         }
     }
@@ -78,7 +57,9 @@ fun CarStockScreen(navController: NavController) {
 @Composable
 fun CarItem(car: Car, onEdit: () -> Unit, onDelete: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
         elevation = CardDefaults.elevatedCardElevation()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -87,11 +68,17 @@ fun CarItem(car: Car, onEdit: () -> Unit, onDelete: () -> Unit) {
             Text(text = "Chofer: ${car.chofer}")
             Text(text = "Activo: ${if (car.activo) "Sí" else "No"}")
 
-            Row(modifier = Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.End) {
+            Row(
+                modifier = Modifier.padding(top = 8.dp),
+                horizontalArrangement = Arrangement.End
+            ) {
                 Button(onClick = onEdit, modifier = Modifier.padding(end = 8.dp)) {
                     Text("Editar")
                 }
-                Button(onClick = onDelete, colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.error)) {
+                Button(
+                    onClick = onDelete,
+                    colors = ButtonDefaults.buttonColors(MaterialTheme.colorScheme.error)
+                ) {
                     Text("Eliminar")
                 }
             }
@@ -104,11 +91,8 @@ fun CarItem(car: Car, onEdit: () -> Unit, onDelete: () -> Unit) {
 fun AddEditCarModal(
     car: Car?,
     onDismiss: () -> Unit,
-    onSave: () -> Unit,
-    onOpenCamera:() -> Unit
 ) {
     var placa by remember { mutableStateOf(car?.placa ?: "") }
-    var originalPlaca by remember { mutableStateOf(car?.placa ?: "") }
     var modelo by remember { mutableStateOf(car?.modelo ?: "") }
     var chofer by remember { mutableStateOf(car?.chofer ?: "") }
     var activo by remember { mutableStateOf(car?.activo ?: true) }
@@ -118,10 +102,13 @@ fun AddEditCarModal(
         title = { Text(text = if (car == null) "Agregar Carro" else "Editar Carro") },
         text = {
             Column {
+                // Campo de texto para "Placa"
                 BasicTextField(
                     value = placa,
                     onValueChange = { placa = it },
-                    modifier = Modifier.fillMaxWidth().padding(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
                     decorationBox = { innerTextField ->
                         OutlinedTextFieldDefaults.DecorationBox(
                             value = placa,
@@ -132,12 +119,6 @@ fun AddEditCarModal(
                             interactionSource = remember { MutableInteractionSource() },
                             isError = false,
                             label = { Text("Placa") },
-                            placeholder = null,
-                            leadingIcon = null,
-                            trailingIcon = null,
-                            prefix = null,
-                            suffix = null,
-                            supportingText = null,
                             colors = TextFieldDefaults.outlinedTextFieldColors(),
                             contentPadding = PaddingValues(8.dp),
                             container = {
@@ -154,10 +135,13 @@ fun AddEditCarModal(
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
+                // Campo de texto para "Modelo"
                 BasicTextField(
                     value = modelo,
                     onValueChange = { modelo = it },
-                    modifier = Modifier.fillMaxWidth().padding(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
                     decorationBox = { innerTextField ->
                         OutlinedTextFieldDefaults.DecorationBox(
                             value = modelo,
@@ -167,13 +151,7 @@ fun AddEditCarModal(
                             visualTransformation = VisualTransformation.None,
                             interactionSource = remember { MutableInteractionSource() },
                             isError = false,
-                            label = { Text("modelo") },
-                            placeholder = null,
-                            leadingIcon = null,
-                            trailingIcon = null,
-                            prefix = null,
-                            suffix = null,
-                            supportingText = null,
+                            label = { Text("Modelo") },
                             colors = TextFieldDefaults.outlinedTextFieldColors(),
                             contentPadding = PaddingValues(8.dp),
                             container = {
@@ -188,11 +166,15 @@ fun AddEditCarModal(
                         )
                     }
                 )
+
                 Spacer(modifier = Modifier.height(8.dp))
+                // Campo de texto para "Chofer"
                 BasicTextField(
                     value = chofer,
                     onValueChange = { chofer = it },
-                    modifier = Modifier.fillMaxWidth().padding(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
                     decorationBox = { innerTextField ->
                         OutlinedTextFieldDefaults.DecorationBox(
                             value = chofer,
@@ -202,13 +184,7 @@ fun AddEditCarModal(
                             visualTransformation = VisualTransformation.None,
                             interactionSource = remember { MutableInteractionSource() },
                             isError = false,
-                            label = { Text("chofer") },
-                            placeholder = null,
-                            leadingIcon = null,
-                            trailingIcon = null,
-                            prefix = null,
-                            suffix = null,
-                            supportingText = null,
+                            label = { Text("Chofer") },
                             colors = TextFieldDefaults.outlinedTextFieldColors(),
                             contentPadding = PaddingValues(8.dp),
                             container = {
@@ -223,10 +199,7 @@ fun AddEditCarModal(
                         )
                     }
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = onOpenCamera) {
-                    Text("Abrir Cámara")
-                }
+
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("Activo:")
@@ -237,8 +210,11 @@ fun AddEditCarModal(
         confirmButton = {
             Button(
                 onClick = {
+                    // Aquí se debería implementar la lógica para guardar o actualizar el carro.
+                    // Por ejemplo, invocar una función en el ViewModel para guardar el carro.
+                    // Se crea un nuevo objeto Car usando los valores ingresados.
                     val newCar = Car(placa, modelo, chofer, activo, car?._idKit ?: "")
-                    saveCarWithImage(newCar, originalPlaca) { onSave() }
+                    // Lógica de guardado pendiente...
                 }
             ) {
                 Text("Guardar")
@@ -250,38 +226,4 @@ fun AddEditCarModal(
             }
         }
     )
-}
-
-fun loadCars(onSuccess: (List<Car>) -> Unit) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val response = ApiClient.apiService.getCars().awaitResponse()
-        if (response.isSuccessful) {
-            response.body()?.let { onSuccess(it) }
-        }
-    }
-}
-fun saveCarWithImage(car: Car, imageBase64: String, onComplete: () -> Unit) {
-    CoroutineScope(Dispatchers.IO).launch {
-        try {
-            val carWithImage = CarWithImage(car, imageBase64)
-            val response = ApiClient.apiService.saveCarWithImage(carWithImage).awaitResponse()
-            if (response.isSuccessful) {
-                withContext(Dispatchers.Main) { onComplete() }
-            } else {
-                println("Error al guardar imagen: ${response.code()} - ${response.message()}")
-            }
-        } catch (e: Exception) {
-            println("Exception: ${e.message}")
-        }
-    }
-}
-
-
-fun deleteCar(car: Car, onComplete: () -> Unit) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val response = ApiClient.apiService.deleteCar(car._idKit).awaitResponse()
-        if (response.isSuccessful) {
-            onComplete()
-        }
-    }
 }

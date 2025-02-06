@@ -1,7 +1,6 @@
 package com.actividad1.myapplication.data
 
 import com.actividad1.myapplication.data.models.Car
-import com.actividad1.myapplication.data.models.CarWithImage
 import com.actividad1.myapplication.data.models.LoginRequest
 import com.actividad1.myapplication.data.models.LoginResponse
 import retrofit2.Call
@@ -19,7 +18,7 @@ interface ApiService {
     fun getCars(): Call<List<Car>>
 
     @POST("unidades")
-    fun saveCarWithImage(@Body car: CarWithImage): Call<CarWithImage>
+    fun createCar(@Body car: Car): Call<Car>
 
     @PUT("unidades/unidad/{placaId}")
     fun updateCar(@Path("placaId") placaId: String, @Body car: Car): Call<Car>

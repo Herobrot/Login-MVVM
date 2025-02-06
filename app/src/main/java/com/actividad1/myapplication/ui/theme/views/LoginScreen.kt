@@ -1,4 +1,4 @@
-package com.actividad1.myapplication.ui.theme.screens
+package com.actividad1.myapplication.ui.theme.views
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
