@@ -1,9 +1,10 @@
 package com.actividad1.myapplication.data
 
 import com.actividad1.myapplication.data.models.Car
+import com.actividad1.myapplication.data.models.NewCar
 import com.actividad1.myapplication.data.models.LoginRequest
 import com.actividad1.myapplication.data.models.LoginResponse
-import com.actividad1.myapplication.data.models.NewCar
+import com.actividad1.myapplication.data.models.LoginImageRequest
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -26,5 +27,8 @@ interface ApiService {
 
     @DELETE("unidades/unidad/{id}")
     fun deleteCar(@Path("id") id: String): Call<Void>
+
+    @POST("users/image")
+    fun loginByImage(@Body request: LoginImageRequest): Call<LoginResponse>
 }
 

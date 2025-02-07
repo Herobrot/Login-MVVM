@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.actividad1.myapplication.ui.theme.MyApplicationTheme
+import com.actividad1.myapplication.ui.theme.views.CameraScreen
 import com.actividad1.myapplication.ui.theme.views.LoginScreen
 import com.actividad1.myapplication.ui.theme.views.CarStockScreen
 
@@ -22,11 +23,12 @@ class MainActivity : ComponentActivity() {
     }
 
 }
+
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "login") {
+    NavHost(navController = navController, startDestination = "camera") {
         composable("login") {
             LoginScreen(
                 onLoginSuccess = {
@@ -38,5 +40,12 @@ fun AppNavigation() {
             )
         }
         composable("carStock") { CarStockScreen(navController) }
+        composable("camera") {CameraScreen(
+            onImageCaptured = { imageBase64 ->
+
+                navController.navigate("carStock")
+            }
+        )
+        }
     }
 }

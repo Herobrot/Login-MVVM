@@ -1,0 +1,76 @@
+package com.actividad1.myapplication.ui.theme.views
+
+import android.Manifest
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.launch
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.actividad1.myapplication.ui.theme.viewmodels.CameraViewModel
+
+@Composable
+fun CameraScreen(
+    onImageCaptured: (String) -> Unit,
+    viewModel: CameraViewModel = viewModel()
+) {
+    val context = LocalContext.current
+
+    // Launcher para solicitar el permiso de la cámara
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (!isGranted) {
+            Toast.makeText(context, "Permiso de cámara denegado", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Launcher para abrir la cámara y obtener un thumbnail (Bitmap)
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview()
+    ) { bitmap: Bitmap? ->
+        if (bitmap != null) {
+            viewModel.processCapturedImage(bitmap, context, onImageCaptured)
+        } else {
+            Toast.makeText(context, "No se capturó la imagen", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Interfaz simple: un botón para tomar la foto.
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Button(onClick = {
+            // Verifica si el permiso ya está concedido.
+            if (ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                cameraLauncher.launch()
+            } else {
+                // Si no está concedido, se solicita el permiso.
+                permissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+        }) {
+            Text(text = "Tomar Foto")
+        }
+    }
+}
