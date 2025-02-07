@@ -1,23 +1,33 @@
-package com.actividad1.myapplication.ui.theme.viewmodel
+package com.actividad1.myapplication.ui.theme.viewmodels
 
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.actividad1.myapplication.data.models.Car
 import com.actividad1.myapplication.data.ApiClient
+import com.actividad1.myapplication.data.models.NewCar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.awaitResponse
 
-class CarStockViewModel : ViewModel() {
-    private var cars by mutableStateOf<List<Car>>(emptyList())
+class UnitCarViewModel : ViewModel() {
+    // Estados internos privados
+    private var _cars by mutableStateOf<List<Car>>(emptyList())
+    private var _showAddEditModal by mutableStateOf(false)
+    private var _selectedCar by mutableStateOf<Car?>(null)
 
-    private var showAddEditModal by mutableStateOf(false)
+    // Propiedades públicas de solo lectura para exponer el estado
+    val cars: List<Car>
+        get() = _cars
 
-    private var selectedCar by mutableStateOf<Car?>(null)
+    val modalStatus: Boolean
+        get() = _showAddEditModal
+
+    val selectedCar: Car?
+        get() = _selectedCar
 
     init {
         loadCars()
@@ -29,32 +39,36 @@ class CarStockViewModel : ViewModel() {
             if (response.isSuccessful) {
                 response.body()?.let { fetchedCars ->
                     withContext(Dispatchers.Main) {
-                        cars = fetchedCars
+                        _cars = fetchedCars
                     }
                 }
             }
         }
     }
 
-    fun addCar(car: Car, originalPlaca: String, onComplete: () -> Unit){
+    fun addCar(car: Car, originalPlaca: String) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val response = if (car._idKit.isEmpty()) {
-                    ApiClient.apiService.createCar(car).awaitResponse()
+                val response = if (car._id.isEmpty()) {
+                    println("entre en ID porque NO TIENE")
+                    val auxiliarCar = NewCar(placa = car.placa, modelo = car.modelo, chofer = car.chofer, activo = car.activo)
+                    ApiClient.apiService.createCar(auxiliarCar).awaitResponse()
                 } else {
-                    ApiClient.apiService.updateCar(originalPlaca, car).awaitResponse()
+                    println("entre con ID, placaOriginal = $originalPlaca, placa = ${car.placa}")
+                    val auxiliarCar = NewCar(placa = car.placa, modelo = car.modelo, chofer = car.chofer, activo = car.activo)
+                    ApiClient.apiService.updateCar(originalPlaca, auxiliarCar).awaitResponse()
                 }
 
                 if (response.isSuccessful) {
                     withContext(Dispatchers.Main) {
-                        onComplete()
+                        savedCar()
                     }
                 } else {
-                    // Log error details
+                    // Registrar error
                     println("Save Car Error: ${response.code()} - ${response.message()}")
                 }
             } catch (e: Exception) {
-                // Log exception
+                // Registrar excepción
                 println("Save Car Exception: ${e.message}")
             }
         }
@@ -62,26 +76,32 @@ class CarStockViewModel : ViewModel() {
 
     fun deleteCar(car: Car) {
         viewModelScope.launch(Dispatchers.IO) {
-            val response = ApiClient.apiService.deleteCar(car._idKit).awaitResponse()
-            if (response.isSuccessful) {
-                withContext(Dispatchers.Main) {
-                    loadCars()
+            if (car._id.isEmpty()){
+                println("No se selecciono un carro")
+            }
+            else{
+                val response = ApiClient.apiService.deleteCar(car._id).awaitResponse()
+                if (response.isSuccessful) {
+                    withContext(Dispatchers.Main) {
+                        loadCars()
+                    }
                 }
             }
         }
     }
 
+    private fun savedCar() {
+        loadCars()
+        _showAddEditModal = false
+    }
+
     fun openModal(car: Car? = null) {
-        selectedCar = car
-        showAddEditModal = true
+        _selectedCar = car
+        _showAddEditModal = true
     }
 
     fun closeModal() {
-        showAddEditModal = false
-        selectedCar = null
+        _showAddEditModal = false
+        _selectedCar = null
     }
-
-    fun getCars(): List<Car> { return this.cars; }
-    fun getCar(): Car? { return this.selectedCar; }
-    fun getModalStatus(): Boolean { return this.showAddEditModal; }
 }

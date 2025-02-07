@@ -4,7 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -13,27 +13,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.actividad1.myapplication.R
-import com.actividad1.myapplication.data.ApiClient
-import com.actividad1.myapplication.data.models.LoginRequest
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.actividad1.myapplication.ui.theme.viewmodels.LoginViewModel
 
 @Composable
 fun LoginScreen(
     onLoginSuccess: (String) -> Unit,
-    onLoginError: (String) -> Unit
+    onLoginError: (String) -> Unit,
+    viewModel: LoginViewModel = viewModel()
 ) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf("") }
-    var successMessage by remember { mutableStateOf("") }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -41,12 +32,14 @@ fun LoginScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Imagen de cabecera
         Image(
             painter = painterResource(id = R.drawable.espaydehernan),
             contentDescription = null,
             modifier = Modifier.fillMaxWidth()
         )
 
+        // Título
         Text(
             text = "Inicio de sesión",
             fontFamily = FontFamily.Serif,
@@ -58,9 +51,10 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Campo para el correo electrónico
         OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
+            value = viewModel.email,
+            onValueChange = { viewModel.onEmailChange(it) },
             label = { Text("Correo electrónico") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
@@ -72,9 +66,10 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Campo para la contraseña
         OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
+            value = viewModel.password,
+            onValueChange = { viewModel.onPasswordChange(it) },
             label = { Text("Contraseña") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
@@ -87,81 +82,30 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Botón para iniciar sesión
         Button(
-            onClick = {
-                if (email.isEmpty() || password.isEmpty()) {
-                    errorMessage = "Por favor, completa todos los campos."
-                } else {
-                    errorMessage = ""
-                    performLogin(
-                        email = email,
-                        password = password,
-                        onSuccess = { message ->
-                            successMessage = message
-                            onLoginSuccess(message)
-                        },
-                        onError = { error ->
-                            errorMessage = error
-                            onLoginError(error)
-                        }
-                    )
-                }
-            },
+            onClick = { viewModel.performLogin(onLoginSuccess, onLoginError) },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = "Iniciar sesión")
         }
 
-        if (successMessage.isNotEmpty()) {
+        // Mensaje de éxito (si existe)
+        if (viewModel.successMessage.isNotEmpty()) {
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = successMessage, color = MaterialTheme.colorScheme.primary)
+            Text(
+                text = viewModel.successMessage,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
 
-        if (errorMessage.isNotEmpty()) {
+        // Mensaje de error (si existe)
+        if (viewModel.errorMessage.isNotEmpty()) {
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = errorMessage, color = MaterialTheme.colorScheme.error)
+            Text(
+                text = viewModel.errorMessage,
+                color = MaterialTheme.colorScheme.error
+            )
         }
     }
-}
-fun performLogin(
-    email: String,
-    password: String,
-    onSuccess: (String) -> Unit,
-    onError: (String) -> Unit
-) {
-    val request = LoginRequest(correo = email, password = password)
-
-    CoroutineScope(Dispatchers.IO).launch {
-        try {
-            val response = ApiClient.apiService.login(request).execute()
-
-            if (response.isSuccessful) {
-                val responseBody = response.body()?.message ?: "Respuesta vacía"
-                // Usamos withContext para ejecutar las actualizaciones de UI en el hilo principal
-                withContext(Dispatchers.Main) {
-                    onSuccess(responseBody)  // Llamada a onSuccess pasando el mensaje recibido
-                }
-            } else {
-                // Si la respuesta no es exitosa, se pasa un mensaje de error
-                withContext(Dispatchers.Main) {
-                    onError("Error al iniciar sesión: ${response.code()}") // Llamada a onError
-                }
-            }
-        } catch (e: Exception) {
-            // Si ocurre una excepción, se maneja aquí
-            withContext(Dispatchers.Main) {
-                onError("Error al conectar con el servidor: ${e.message}") // Llamada a onError
-            }
-        }
-    }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun LoginScreenPreview() {
-    LoginScreen(
-        onLoginSuccess = { },
-        onLoginError = { }
-    )
 }

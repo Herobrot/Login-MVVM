@@ -3,6 +3,7 @@ package com.actividad1.myapplication.data
 import com.actividad1.myapplication.data.models.Car
 import com.actividad1.myapplication.data.models.LoginRequest
 import com.actividad1.myapplication.data.models.LoginResponse
+import com.actividad1.myapplication.data.models.NewCar
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -18,10 +19,10 @@ interface ApiService {
     fun getCars(): Call<List<Car>>
 
     @POST("unidades")
-    fun createCar(@Body car: Car): Call<Car>
+    fun createCar(@Body car: NewCar): Call<Car>
 
     @PUT("unidades/unidad/{placaId}")
-    fun updateCar(@Path("placaId") placaId: String, @Body car: Car): Call<Car>
+    fun updateCar(@Path("placaId") placaId: String, @Body car: NewCar): Call<Car>
 
     @DELETE("unidades/unidad/{id}")
     fun deleteCar(@Path("id") id: String): Call<Void>

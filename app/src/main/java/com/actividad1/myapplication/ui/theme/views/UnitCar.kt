@@ -13,10 +13,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.actividad1.myapplication.data.models.Car
-import com.actividad1.myapplication.ui.theme.viewmodel.CarStockViewModel
+import com.actividad1.myapplication.ui.theme.viewmodels.UnitCarViewModel
 
 @Composable
-fun CarStockScreen(navController: NavController, viewModel: CarStockViewModel = viewModel()) {
+fun CarStockScreen(navController: NavController, viewModel: UnitCarViewModel = viewModel()) {
 
     Column(modifier = Modifier.padding(16.dp).fillMaxSize()) {
         Text(
@@ -34,9 +34,11 @@ fun CarStockScreen(navController: NavController, viewModel: CarStockViewModel = 
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        LazyColumn {
-            items(viewModel.getCars().size) { index ->
-                val car = viewModel.getCars()[index]
+        LazyColumn(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            items(viewModel.cars.size) { index ->
+                val car = viewModel.cars[index]
                 CarItem(
                     car = car,
                     onEdit = { viewModel.openModal(car) },
@@ -45,12 +47,13 @@ fun CarStockScreen(navController: NavController, viewModel: CarStockViewModel = 
             }
         }
 
-        if (viewModel.getModalStatus()) {
+        if (viewModel.modalStatus) {
             AddEditCarModal(
-                car = viewModel.getCar(),
-                onDismiss = { viewModel.closeModal() }
+                onDismiss = { viewModel.closeModal() },
+                viewModel = viewModel
             )
         }
+
     }
 }
 
@@ -89,17 +92,18 @@ fun CarItem(car: Car, onEdit: () -> Unit, onDelete: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditCarModal(
-    car: Car?,
-    onDismiss: () -> Unit,
+    viewModel: UnitCarViewModel,
+    onDismiss: () -> Unit
 ) {
-    var placa by remember { mutableStateOf(car?.placa ?: "") }
-    var modelo by remember { mutableStateOf(car?.modelo ?: "") }
-    var chofer by remember { mutableStateOf(car?.chofer ?: "") }
-    var activo by remember { mutableStateOf(car?.activo ?: true) }
+    var placa by remember { mutableStateOf(viewModel.selectedCar?.placa ?: "") }
+    var originalPlaca by remember { mutableStateOf(viewModel.selectedCar?.placa ?: "") }
+    var modelo by remember { mutableStateOf(viewModel.selectedCar?.modelo ?: "") }
+    var chofer by remember { mutableStateOf(viewModel.selectedCar?.chofer ?: "") }
+    var activo by remember { mutableStateOf(viewModel.selectedCar?.activo ?: true) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = if (car == null) "Agregar Carro" else "Editar Carro") },
+        title = { Text(text = if (viewModel.selectedCar == null) "Agregar Carro" else "Editar Carro") },
         text = {
             Column {
                 // Campo de texto para "Placa"
@@ -210,11 +214,9 @@ fun AddEditCarModal(
         confirmButton = {
             Button(
                 onClick = {
-                    // Aquí se debería implementar la lógica para guardar o actualizar el carro.
-                    // Por ejemplo, invocar una función en el ViewModel para guardar el carro.
-                    // Se crea un nuevo objeto Car usando los valores ingresados.
-                    val newCar = Car(placa, modelo, chofer, activo, car?._idKit ?: "")
-                    // Lógica de guardado pendiente...
+                    val newCar = Car(placa, modelo, chofer, activo, viewModel.selectedCar?._idKit ?: "", viewModel.selectedCar?._id ?: "")
+                    println(newCar)
+                    viewModel.addCar(newCar, originalPlaca)
                 }
             ) {
                 Text("Guardar")

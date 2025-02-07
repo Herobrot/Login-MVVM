@@ -5,5 +5,13 @@ data class Car(
     val modelo: String,
     val chofer: String,
     val activo: Boolean,
-    val _idKit: String
+    val _idKit: String,
+    val _id: String
+)
+
+data class NewCar(
+    val placa: String,
+    val modelo: String,
+    val chofer: String,
+    val activo: Boolean
 )
