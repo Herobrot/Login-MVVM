@@ -5,9 +5,6 @@ import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
 
-/**
- * Wrapper para SharedPreferences encriptadas usando la biblioteca de seguridad de Android
- */
 class EncryptedPreferences private constructor(context: Context) {
 
     private val masterKey = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)

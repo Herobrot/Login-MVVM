@@ -3,7 +3,7 @@ package com.actividad1.myapplication.ui.theme.viewmodels
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.actividad1.myapplication.data.AppSettingsRepository
+import com.actividad1.myapplication.data.repository.AppSettingsRepository
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 

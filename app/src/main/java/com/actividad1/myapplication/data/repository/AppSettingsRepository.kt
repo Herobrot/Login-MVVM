@@ -1,4 +1,4 @@
-package com.actividad1.myapplication.data
+package com.actividad1.myapplication.data.repository
 
 import android.content.Context
 import com.actividad1.myapplication.security.EncryptedPreferences
@@ -12,7 +12,6 @@ class AppSettingsRepository private constructor(context: Context) {
 
     companion object {
         private const val KEY_DARK_MODE = "dark_mode"
-        private const val KEY_LANGUAGE = "language"
         private const val KEY_NOTIFICATIONS_ENABLED = "notifications_enabled"
 
         @Volatile

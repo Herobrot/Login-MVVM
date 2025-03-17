@@ -1,17 +1,25 @@
 package com.actividad1.myapplication.ui.theme.viewmodels
 
+import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.actividad1.myapplication.data.ApiClient
+import com.actividad1.myapplication.data.repository.AppSettingsRepository
 import com.actividad1.myapplication.data.models.LoginRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class LoginViewModel : ViewModel() {
+class LoginViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val appSettingsRepository = AppSettingsRepository.getInstance(application)
+
+    // Observable para el tema oscuro
+    val darkModeEnabled = appSettingsRepository.darkModeEnabled
+
     // Estados internos
     private var _email by mutableStateOf("")
 

@@ -3,13 +3,13 @@ package com.actividad1.myapplication
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.actividad1.myapplication.data.AppSettingsRepository
+import com.actividad1.myapplication.data.repository.AppSettingsRepository
 import com.actividad1.myapplication.ui.theme.views.CameraScreen
 import com.actividad1.myapplication.ui.theme.views.CarStockScreen
 import com.actividad1.myapplication.ui.theme.views.LoginScreen
