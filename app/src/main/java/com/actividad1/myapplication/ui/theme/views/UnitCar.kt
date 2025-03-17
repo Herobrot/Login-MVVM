@@ -1,5 +1,11 @@
 package com.actividad1.myapplication.ui.theme.views
 
+import android.Manifest
+import android.os.Build
+import android.os.Bundle
+import android.util.Log
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,7 +19,46 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.actividad1.myapplication.data.models.Car
+import com.actividad1.myapplication.ui.theme.MyApplicationTheme
 import com.actividad1.myapplication.ui.theme.viewmodels.UnitCarViewModel
+import com.google.firebase.messaging.FirebaseMessaging
+
+class UnitCar : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // Solicitar permiso para notificaciones en Android 13 (TIRAMISU) o superior
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 101)
+        }
+
+        // Obtener el token de Firebase y mostrarlo en el log
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.e("FCM", "Error al obtener el token", task.exception)
+                return@addOnCompleteListener
+            }
+            val token = task.result
+            Log.d("FCM", "Token Firebase: $token")
+        }
+
+        // Suscribirse al tópico "notifications"
+        FirebaseMessaging.getInstance().subscribeToTopic("notifications")
+            .addOnCompleteListener { task ->
+                if (!task.isSuccessful) {
+                    Log.e("FCM", "Error al suscribirse al tópico", task.exception)
+                } else {
+                    Log.d("FCM", "Suscripción exitosa al tópico 'notifications'")
+                }
+            }
+
+
+        // Configurar la UI con Jetpack Compose
+        setContent {
+            MyApplicationTheme {  }
+        }
+    }
+}
 
 @Composable
 fun CarStockScreen(navController: NavController, viewModel: UnitCarViewModel = viewModel()) {

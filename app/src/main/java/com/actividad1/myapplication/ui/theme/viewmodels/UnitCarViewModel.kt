@@ -1,23 +1,45 @@
 package com.actividad1.myapplication.ui.theme.viewmodels
 
+import android.app.Application
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.actividad1.myapplication.data.models.Car
 import com.actividad1.myapplication.data.ApiClient
+import com.actividad1.myapplication.data.AppSettingsRepository
 import com.actividad1.myapplication.data.models.NewCar
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.awaitResponse
 
-class UnitCarViewModel : ViewModel() {
+class UnitCarViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val appSettingsRepository = AppSettingsRepository.getInstance(application)
+
+    // Observable para el tema oscuro
+    val darkModeEnabled = appSettingsRepository.darkModeEnabled
+    // Clase para representar el estado de notificación
+    data class NotificationState(
+        val message: String = "",
+        val type: NotificationType = NotificationType.NONE,
+        val isVisible: Boolean = false
+    )
+
+    // Tipos de notificación
+    enum class NotificationType {
+        SUCCESS, ERROR, WARNING, INFO, NONE
+    }
+
     // Estados internos privados
     private var _cars by mutableStateOf<List<Car>>(emptyList())
     private var _showAddEditModal by mutableStateOf(false)
     private var _selectedCar by mutableStateOf<Car?>(null)
+    private var _notification by mutableStateOf(NotificationState())
 
     // Propiedades públicas de solo lectura para exponer el estado
     val cars: List<Car>
@@ -28,6 +50,9 @@ class UnitCarViewModel : ViewModel() {
 
     val selectedCar: Car?
         get() = _selectedCar
+
+    val notification: NotificationState
+        get() = _notification
 
     init {
         loadCars()
@@ -103,5 +128,20 @@ class UnitCarViewModel : ViewModel() {
     fun closeModal() {
         _showAddEditModal = false
         _selectedCar = null
+    }
+
+    private fun showNotification(message: String, type: NotificationType) {
+        _notification = NotificationState(message = message, type = type, isVisible = true)
+
+        // Configurar un temporizador para ocultar la notificación después de un tiempo
+        viewModelScope.launch {
+            delay(3000) // Duración de la notificación: 3 segundos
+            _notification = _notification.copy(isVisible = false)
+        }
+    }
+
+    // Metodo para cerrar la notificación manualmente
+    fun dismissNotification() {
+        _notification = _notification.copy(isVisible = false)
     }
 }
