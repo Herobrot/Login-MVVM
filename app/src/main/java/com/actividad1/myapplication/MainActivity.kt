@@ -1,6 +1,9 @@
 package com.actividad1.myapplication
 
+import android.os.Build
 import android.os.Bundle
+import android.Manifest
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
@@ -16,6 +19,7 @@ import com.actividad1.myapplication.ui.theme.views.LoginScreen
 import com.actividad1.myapplication.ui.theme.views.SettingsScreen
 import com.actividad1.myapplication.ui.theme.MyApplicationTheme
 import com.actividad1.myapplication.ui.theme.viewmodels.ViewModelFactory
+import com.google.firebase.messaging.FirebaseMessaging
 
 class MainActivity : ComponentActivity() {
 
@@ -23,6 +27,30 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 101)
+        }
+
+        // Obtener el token de Firebase y mostrarlo en el log
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.e("FCM", "Error al obtener el token", task.exception)
+                return@addOnCompleteListener
+            }
+            val token = task.result
+            Log.d("FCM", "Token Firebase: $token")
+        }
+
+        // Suscribirse al tópico "notifications"
+        FirebaseMessaging.getInstance().subscribeToTopic("notifications")
+            .addOnCompleteListener { task ->
+                if (!task.isSuccessful) {
+                    Log.e("FCM", "Error al suscribirse al tópico", task.exception)
+                } else {
+                    Log.d("FCM", "Suscripción exitosa al tópico 'notifications'")
+                }
+            }
 
         // Inicializar el repositorio
         appSettingsRepository = AppSettingsRepository.getInstance(applicationContext)
